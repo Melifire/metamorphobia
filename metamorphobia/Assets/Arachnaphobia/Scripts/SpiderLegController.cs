@@ -16,30 +16,33 @@ public class SpiderLegController : MonoBehaviour
 
     public Transform Arep;
     public Transform Brep;
+    public Transform arm;
+    private Quaternion restingRot;
+
     
 
 
     // Start is called before the first frame update
     void Start()
     {
-        A = new Vector3(0, 0, 10);
-        B = new Vector3(0, 0, 10);
+        A = new Vector3(0, 0, 0.9f);
+        B = new Vector3(0, 0, 0.9f);
         prevPos = Vector3.zero;
+        restingRot = this.GetComponent<Transform>().rotation;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 newPos = this.GetComponent<Transform>().position;
-        Vector3 posChange = newPos - prevPos;
-        A -= posChange;
-        B -= posChange;
-
+        A = this.GetComponent<Transform>().InverseTransformPoint(A);
+        Debug.Log(A);
         if (A.x > 2*maxX){
             A.x -= 4*maxX;
         } else if (A.x < -2*maxX){
             A.x += 4*maxX;
         }
+        A.z = .5f;
 
         if (Mathf.Abs(A.x) <= maxX){
             B = A;
@@ -50,18 +53,24 @@ public class SpiderLegController : MonoBehaviour
             B = A;
             B.x = -A.x + 2 * maxX;
         }
-        if (Arep != null){
-            Arep.position = A+newPos;
-        }
-        if (Brep != null){
-            Brep.position = B+newPos;
-        }
-        float theta = Mathf.Atan((B.x)/(B.z))*90+180;
 
-        bone1.SetPositionAndRotation(newPos, Quaternion.Euler(new Vector3(-20,theta,0)));
+
+        float theta = Mathf.Atan((B.x)/(B.z)) * 70;
+        Debug.Log(theta);
+
+        arm.localEulerAngles = new Vector3(arm.localEulerAngles.x, theta+180, arm.localEulerAngles.z);
+        //arm.localRotation = Quaternion.Euler(this.restingRot.eulerAngles + new Vector3(0,theta,0));
         Debug.Log("" + theta + " " + B.x + " " + B.z);
 
-        prevPos = newPos;
+
+        A = this.GetComponent<Transform>().TransformPoint(A);
+        B = this.GetComponent<Transform>().TransformPoint(B);
+        if (Arep != null){
+            Arep.position = A;
+        }
+        if (Brep != null){
+            Brep.position = B;
+        }
 
     }
 }
